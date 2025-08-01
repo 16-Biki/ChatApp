@@ -1,0 +1,106 @@
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #f5f5f5;
+  border-left: 1px solid #ddd;
+}
+
+.chat-header {
+  background: #075e54;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #eae6df;
+}
+
+.msg {
+  padding: 8px 12px;
+  max-width: 70%;
+  border-radius: 8px;
+  word-wrap: break-word;
+  font-size: 14px;
+}
+
+.sent {
+  align-self: flex-end;
+  background: #dcf8c6;
+}
+
+.received {
+  align-self: flex-start;
+  background: #fff;
+}
+
+.chat-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  background: #fff;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+
+.chat-input button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  background: #128c7e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background: #075e54;
+}
+
+.no-messages {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+.msg-status {
+  margin-left: 5px;
+  color: gray;
+}
+
+.msg-status.read {
+  color: #0b93f6; /* Blue tick for seen messages */
+}
+.status-text {
+  font-weight: bold;
+  color: gray;
+  font-size: 12px;
+  display: inline; /* 👈 ensures no box or block-like behavior */
+  background: none; /* 👈 remove any background */
+  padding: 0;       /* 👈 remove padding */
+  border: none;     /* 👈 remove any border */
+}
+
+.status-text {
+  font-weight: bold;
+}
+
+.status-text.online {
+  color: #0b93f6; /* Blue for online */
+}
+
+.status-text.offline {
+  color: rgb(225, 218, 218); /* Gray for offline */
+}
