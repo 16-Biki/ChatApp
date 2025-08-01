@@ -16,7 +16,11 @@ function Chat({ user }) {
   // ✅ Initialize socket for each logged-in user
   useEffect(() => {
     if (user?._id) {
-      const newSocket = io("https://chatapp-htm4.onrender.com");
+    const newSocket = io("https://chatapp-htm4.onrender.com", {
+  transports: ["websocket"],
+  secure: true,
+  withCredentials: true,
+});
       setSocketInstance(newSocket);
 
       // Register the user
