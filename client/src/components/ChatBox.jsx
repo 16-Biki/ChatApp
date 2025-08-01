@@ -5,10 +5,10 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
   const [text, setText] = useState("");
   const scrollRef = useRef();
 
-  // ✅ Check if the selected user is online
-  const isOnline = onlineUsers.includes(selectedUser._id);
+  
+  const isOnline = onlineUsers?.includes(selectedUser._id);
 
-  // ✅ Send message on button click or Enter key
+  
   const handleSend = () => {
     if (text.trim() === "") return;
     sendMessage(text);
@@ -31,9 +31,12 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
     <div className="chat-box">
       <div className="chat-header">
         <strong>{selectedUser.username}</strong> <br />
-        <small className={`status-text ${isOnline ? "online" : "offline"}`}>
-          {isOnline ? "Online" : "Offline"}
-        </small>
+        {/* ✅ Show Online/Offline only after user list is loaded */}
+        {onlineUsers.length > 0 && (
+          <small className={`status-text ${isOnline ? "online" : "offline"}`}>
+            {isOnline ? "Online" : "Offline"}
+          </small>
+        )}
       </div>
       <div className="chat-messages">
         {messages.length === 0 && (
@@ -45,7 +48,7 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
             key={m._id || i}
             ref={i === messages.length - 1 ? scrollRef : null}
             className={`msg ${
-              m.sender._id === selectedUser._id ? "received" : "sent"
+              m.sender?._id === selectedUser._id ? "received" : "sent"
             }`}
           >
             <div className="msg-text">{m.message}</div>
@@ -58,7 +61,7 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
                     })
                   : ""}
               </small>
-              {m.sender._id === currentUser._id && (
+              {m.sender?._id === currentUser._id && (
                 <small className={`msg-status ${m.isRead ? "read" : ""}`}>
                   {m.isRead ? "✔✔" : "✔"}
                 </small>
