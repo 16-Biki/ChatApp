@@ -3,12 +3,12 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Message = require("../models/Message");
 
-// ✅ Fetch messages between two specific users
+//  Fetch messages between two specific users
 router.get("/:userId/:receiverId", async (req, res) => {
   try {
     const { userId, receiverId } = req.params;
 
-    // ✅ Validate user IDs
+    //  Validate user IDs
     if (!userId || !receiverId) {
       return res.status(400).json({ msg: "Both user IDs are required." });
     }
@@ -20,7 +20,7 @@ router.get("/:userId/:receiverId", async (req, res) => {
       return res.status(400).json({ msg: "Invalid user ID format." });
     }
 
-    // ✅ Fetch messages (bi-directional)
+    //  Fetch messages (bi-directional)
     const messages = await Message.find({
       $or: [
         { sender: userId, receiver: receiverId },
@@ -30,7 +30,7 @@ router.get("/:userId/:receiverId", async (req, res) => {
       .populate("sender receiver", "username email")
       .sort({ createdAt: 1 });
 
-    // ✅ No messages found
+    // No messages found
     if (!messages || messages.length === 0) {
       return res.status(200).json([]); // Return empty array
     }

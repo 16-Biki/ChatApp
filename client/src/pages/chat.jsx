@@ -16,19 +16,17 @@ function Chat({ user }) {
   // ✅ Initialize socket for each logged-in user
   useEffect(() => {
     if (user?._id) {
-    const newSocket = io("https://chatapp-htm4.onrender.com", {
-  transports: ["websocket"],
-  secure: true,
-  withCredentials: true,
-});
+      const newSocket = io("https://chatapp-htm4.onrender.com", {
+        transports: ["websocket"],
+        secure: true,
+        withCredentials: true,
+      });
       setSocketInstance(newSocket);
 
-      // Register the user
       newSocket.emit("registerUser", user._id);
 
-      // ✅ Listen for online users update
       newSocket.on("updateOnlineUsers", (users) => {
-        setOnlineUsers(users); // Store array of online user IDs
+        setOnlineUsers(users);
       });
 
       return () => {
@@ -37,7 +35,7 @@ function Chat({ user }) {
     }
   }, [user]);
 
-  // ✅ Load all users except the current one
+  // Load all users except the current one
   useEffect(() => {
     if (!user?._id) return;
     axios
@@ -46,14 +44,17 @@ function Chat({ user }) {
       .catch((err) => console.error("Error fetching users:", err));
   }, [user]);
 
-  // ✅ Handle incoming messages and read receipts
+  //  Handle incoming messages and read receipts
   useEffect(() => {
     if (!socketInstance) return;
 
     const handleMessage = (msg) => {
+      const isCurrentChat =
+        msg.sender._id === selectedUser?._id && msg.receiver._id === user._id;
+
       if (
         (msg.sender._id === user._id && msg.receiver._id === selectedUser?._id) ||
-        (msg.sender._id === selectedUser?._id && msg.receiver._id === user._id)
+        isCurrentChat
       ) {
         setMessages((prev) => {
           const filtered = prev.filter(
@@ -61,6 +62,11 @@ function Chat({ user }) {
           );
           return [...filtered, msg];
         });
+
+        //  Immediately mark new incoming message as read if current chat is open
+        if (isCurrentChat) {
+          markMessagesAsRead(msg.sender._id);
+        }
       }
     };
 
@@ -83,7 +89,7 @@ function Chat({ user }) {
     };
   }, [selectedUser, user, socketInstance]);
 
-  // ✅ Optimistic read receipt update
+  // Mark messages as read in backend & frontend
   const markMessagesAsRead = (receiverId) => {
     setMessages((prev) =>
       prev.map((msg) =>
@@ -106,7 +112,7 @@ function Chat({ user }) {
       .catch((err) => console.error("Read update failed:", err));
   };
 
-  // ✅ Load previous messages and mark them as read immediately
+  //  Load previous messages
   const loadMessages = async (receiverId) => {
     if (!receiverId || !user?._id) return;
 
@@ -120,14 +126,25 @@ function Chat({ user }) {
         `https://chatapp-htm4.onrender.com/api/messages/${user._id}/${receiverId}`
       );
       setMessages(res.data);
-
-      markMessagesAsRead(receiverId);
     } catch (err) {
       console.error("Error fetching messages:", err.response?.data || err.message);
     }
   };
 
-  // ✅ Send message with optimistic UI
+  //  Immediately mark messages as read after they are rendered
+  useEffect(() => {
+    if (!selectedUser || messages.length === 0) return;
+
+    const hasUnread = messages.some(
+      (msg) => msg.sender._id === selectedUser._id && !msg.isRead
+    );
+
+    if (hasUnread) {
+      markMessagesAsRead(selectedUser._id);
+    }
+  }, [selectedUser, messages]);
+
+  //  Send message with optimistic UI
   const sendMessage = (text) => {
     if (!text || !selectedUser || !socketInstance) return;
 
@@ -160,12 +177,12 @@ function Chat({ user }) {
         />
         {selectedUser ? (
           <ChatBox
-  selectedUser={selectedUser}
-  messages={messages}
-  sendMessage={sendMessage}
-  currentUser={user}
-  onlineUsers={onlineUsers} 
-/>
+            selectedUser={selectedUser}
+            messages={messages}
+            sendMessage={sendMessage}
+            currentUser={user}
+            onlineUsers={onlineUsers}
+          />
         ) : (
           <div className="no-chat">👈 Select a user to start chatting</div>
         )}
@@ -174,4 +191,4 @@ function Chat({ user }) {
   );
 }
 
-export default Chat;
+export default Chat;  
