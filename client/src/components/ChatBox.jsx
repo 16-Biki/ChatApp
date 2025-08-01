@@ -5,10 +5,10 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
   const [text, setText] = useState("");
   const scrollRef = useRef();
 
-  
-  const isOnline = onlineUsers?.includes(selectedUser._id);
+  // ✅ Ensure selectedUser exists and match IDs correctly
+  const isOnline =
+    selectedUser && onlineUsers.some((userId) => userId === selectedUser._id);
 
-  
   const handleSend = () => {
     if (text.trim() === "") return;
     sendMessage(text);
@@ -30,14 +30,14 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
   return (
     <div className="chat-box">
       <div className="chat-header">
-        <strong>{selectedUser.username}</strong> <br />
-        {/* ✅ Show Online/Offline only after user list is loaded */}
-        {onlineUsers.length > 0 && (
+        <strong>{selectedUser?.username || "Select a user"}</strong> <br />
+        {selectedUser && (
           <small className={`status-text ${isOnline ? "online" : "offline"}`}>
             {isOnline ? "Online" : "Offline"}
           </small>
         )}
       </div>
+
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="no-messages">No messages yet. Say hi 👋</div>
@@ -48,7 +48,7 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
             key={m._id || i}
             ref={i === messages.length - 1 ? scrollRef : null}
             className={`msg ${
-              m.sender?._id === selectedUser._id ? "received" : "sent"
+              m.sender?._id === selectedUser?._id ? "received" : "sent"
             }`}
           >
             <div className="msg-text">{m.message}</div>
@@ -70,6 +70,7 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
           </div>
         ))}
       </div>
+
       <div className="chat-input">
         <input
           type="text"
