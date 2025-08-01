@@ -5,9 +5,9 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
   const [text, setText] = useState("");
   const scrollRef = useRef();
 
-  // ✅ Ensure selectedUser exists and match IDs correctly
+  // Ensure selectedUser exists and match IDs correctly
   const isOnline =
-    selectedUser && onlineUsers.some((userId) => userId === selectedUser._id);
+    selectedUser && onlineUsers.includes(selectedUser._id.toString());
 
   const handleSend = () => {
     if (text.trim() === "") return;
@@ -22,7 +22,7 @@ function ChatBox({ selectedUser, messages, sendMessage, currentUser, onlineUsers
     }
   };
 
-  // ✅ Auto-scroll to the last message
+  // Auto-scroll to the last message
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
