@@ -160,11 +160,12 @@ function Chat({ user }) {
         />
         {selectedUser ? (
           <ChatBox
-            selectedUser={selectedUser}
-            messages={messages}
-            sendMessage={sendMessage}
-            currentUser={user}
-          />
+  selectedUser={selectedUser}
+  messages={messages}
+  sendMessage={sendMessage}
+  currentUser={user}
+  onlineUsers={onlineUsers} 
+/>
         ) : (
           <div className="no-chat">👈 Select a user to start chatting</div>
         )}
