@@ -12,7 +12,7 @@ function Login({setUser}) {
     const handlesubmit=async(e)=>{
         e.preventDefault();
         try {
-            const res= await axios.post("http://localhost:5000/api/auth/login",form);
+            const res= await axios.post("https://chatapp-htm4.onrender.com/api/auth/login",form);
             localStorage.setItem("chatUser",JSON.stringify(res.data.user))
             setUser(res.data.user)
             navigate("/chat");

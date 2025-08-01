@@ -16,7 +16,7 @@ function Chat({ user }) {
   // ✅ Initialize socket for each logged-in user
   useEffect(() => {
     if (user?._id) {
-      const newSocket = io("http://localhost:5000");
+      const newSocket = io("https://chatapp-htm4.onrender.com");
       setSocketInstance(newSocket);
 
       // Register the user
@@ -37,7 +37,7 @@ function Chat({ user }) {
   useEffect(() => {
     if (!user?._id) return;
     axios
-      .get("http://localhost:5000/api/auth/all")
+      .get("https://chatapp-htm4.onrender.com/api/auth/all")
       .then((res) => setUsers(res.data.filter((u) => u._id !== user._id)))
       .catch((err) => console.error("Error fetching users:", err));
   }, [user]);
@@ -95,7 +95,7 @@ function Chat({ user }) {
     }
 
     axios
-      .put("http://localhost:5000/api/messages/read", {
+      .put("https://chatapp-htm4.onrender.com/api/messages/read", {
         sender: receiverId,
         receiver: user._id,
       })
@@ -113,7 +113,7 @@ function Chat({ user }) {
       setSelectedUser(userData);
 
       const res = await axios.get(
-        `http://localhost:5000/api/messages/${user._id}/${receiverId}`
+        `https://chatapp-htm4.onrender.com/api/messages/${user._id}/${receiverId}`
       );
       setMessages(res.data);
 
