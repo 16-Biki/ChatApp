@@ -3,6 +3,9 @@
 A full-stack real-time chat application built using **MongoDB, Express, React, Node.js**, and **Socket.IO**.  
 Users can sign up, log in, see online users, send private messages, and get read receipts in real time.
 
+Live Demo:chat-app-two-nu-23.vercel.app
+
+
 ---
 
 ## 🚀 Features
@@ -36,33 +39,6 @@ Users can sign up, log in, see online users, send private messages, and get read
 
 ---
 
-## 📁 Project Structure
-
-ChatApp
-│
-├── client
-│ ├── src
-│ │ ├── components
-│ │ │ ├── ChatBox.jsx
-│ │ │ ├── Navbar.jsx
-│ │ │ └── UserList.jsx
-│ │ ├── pages
-│ │ │ ├── Login.jsx
-│ │ │ ├── Signup.jsx
-│ │ │ └── Chat.jsx
-│ │ └── App.jsx
-│
-├── server
-│ ├── models
-│ │ ├── User.js
-│ │ └── Message.js
-│ ├── Routes
-│ │ ├── authRoutes.js
-│ │ └── messageRoutes.js
-│ ├── index.js
-│ └── .env
-│
-└── README.md
 
 
 ---
@@ -81,9 +57,7 @@ MONGO_URI=your_mongodb_connection_string
 
 ### 1️⃣ Clone Repository
 
-```bash
-git clone https://github.com/your-username/ChatApp.git
-cd ChatApp
+`
 
 2️⃣ Backend Setup
 
