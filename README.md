@@ -3,7 +3,7 @@
 A full-stack real-time chat application built using **MongoDB, Express, React, Node.js**, and **Socket.IO**.  
 Users can sign up, log in, see online users, send private messages, and get read receipts in real time.
 
-Live Demo:chat-app-two-nu-23.vercel.app
+Live Demo:chat-https://chat-app-two-nu-23.vercel.app
 
 
 ---
