@@ -12,8 +12,10 @@ function Chat({ user }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
-  // ✅ Initialize socket for each logged-in user
+  // Initialize socket
   useEffect(() => {
     if (user?._id) {
       const newSocket = io("https://chatapp-htm4.onrender.com", {
@@ -21,6 +23,7 @@ function Chat({ user }) {
         secure: true,
         withCredentials: true,
       });
+
       setSocketInstance(newSocket);
 
       newSocket.emit("registerUser", user._id);
@@ -29,22 +32,37 @@ function Chat({ user }) {
         setOnlineUsers(users);
       });
 
-      return () => {
-        newSocket.disconnect();
-      };
+      return () => newSocket.disconnect();
     }
   }, [user]);
 
-  // Load all users except the current one
+  // Load users
   useEffect(() => {
     if (!user?._id) return;
+
     axios
       .get("https://chatapp-htm4.onrender.com/api/auth/all")
-      .then((res) => setUsers(res.data.filter((u) => u._id !== user._id)))
+      .then((res) => {
+        const filtered = res.data.filter((u) => u._id !== user._id);
+        setUsers(filtered);
+        setLoadingUsers(false);
+      })
       .catch((err) => console.error("Error fetching users:", err));
   }, [user]);
 
-  //  Handle incoming messages and read receipts
+  //  Load unread message counts
+  useEffect(() => {
+    if (!user?._id) return;
+
+    axios
+      .get(`https://chatapp-htm4.onrender.com/api/messages/unread/${user._id}`)
+      .then((res) => {
+        setUnreadCounts(res.data);
+      })
+      .catch((err) => console.error("Unread fetch error:", err));
+  }, [user]);
+
+  // Handle socket messages
   useEffect(() => {
     if (!socketInstance) return;
 
@@ -53,20 +71,33 @@ function Chat({ user }) {
         msg.sender._id === selectedUser?._id && msg.receiver._id === user._id;
 
       if (
-        (msg.sender._id === user._id && msg.receiver._id === selectedUser?._id) ||
+        (msg.sender._id === user._id &&
+          msg.receiver._id === selectedUser?._id) ||
         isCurrentChat
       ) {
         setMessages((prev) => {
           const filtered = prev.filter(
-            (m) => !(m.message === msg.message && m.sender._id === msg.sender._id)
+            (m) =>
+              !(m.message === msg.message && m.sender._id === msg.sender._id),
           );
+
           return [...filtered, msg];
         });
 
-        //  Immediately mark new incoming message as read if current chat is open
         if (isCurrentChat) {
           markMessagesAsRead(msg.sender._id);
         }
+      }
+
+      // Increase unread count if chat is NOT open
+      if (
+        msg.receiver._id === user._id &&
+        msg.sender._id !== selectedUser?._id
+      ) {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [msg.sender._id]: (prev[msg.sender._id] || 0) + 1,
+        }));
       }
     };
 
@@ -74,8 +105,8 @@ function Chat({ user }) {
       if (senderId === user._id && receiverId === selectedUser?._id) {
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.sender._id === user._id ? { ...msg, isRead: true } : msg
-          )
+            msg.sender._id === user._id ? { ...msg, isRead: true } : msg,
+          ),
         );
       }
     };
@@ -89,12 +120,12 @@ function Chat({ user }) {
     };
   }, [selectedUser, user, socketInstance]);
 
-  // Mark messages as read in backend & frontend
+  // Mark messages read
   const markMessagesAsRead = (receiverId) => {
     setMessages((prev) =>
       prev.map((msg) =>
-        msg.sender._id === receiverId ? { ...msg, isRead: true } : msg
-      )
+        msg.sender._id === receiverId ? { ...msg, isRead: true } : msg,
+      ),
     );
 
     if (socketInstance) {
@@ -104,15 +135,13 @@ function Chat({ user }) {
       });
     }
 
-    axios
-      .put("https://chatapp-htm4.onrender.com/api/messages/read", {
-        sender: receiverId,
-        receiver: user._id,
-      })
-      .catch((err) => console.error("Read update failed:", err));
+    axios.put("https://chatapp-htm4.onrender.com/api/messages/read", {
+      sender: receiverId,
+      receiver: user._id,
+    });
   };
 
-  //  Load previous messages
+  // Load messages
   const loadMessages = async (receiverId) => {
     if (!receiverId || !user?._id) return;
 
@@ -122,41 +151,38 @@ function Chat({ user }) {
 
       setSelectedUser(userData);
 
+      // Reset unread count
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [receiverId]: 0,
+      }));
+
       const res = await axios.get(
-        `https://chatapp-htm4.onrender.com/api/messages/${user._id}/${receiverId}`
+        `https://chatapp-htm4.onrender.com/api/messages/${user._id}/${receiverId}`,
       );
+
       setMessages(res.data);
     } catch (err) {
-      console.error("Error fetching messages:", err.response?.data || err.message);
+      console.error(
+        "Error fetching messages:",
+        err.response?.data || err.message,
+      );
     }
   };
 
-  //  Immediately mark messages as read after they are rendered
-  useEffect(() => {
-    if (!selectedUser || messages.length === 0) return;
-
-    const hasUnread = messages.some(
-      (msg) => msg.sender._id === selectedUser._id && !msg.isRead
-    );
-
-    if (hasUnread) {
-      markMessagesAsRead(selectedUser._id);
-    }
-  }, [selectedUser, messages]);
-
-  //  Send message with optimistic UI
+  // Send message
   const sendMessage = (text) => {
     if (!text || !selectedUser || !socketInstance) return;
 
-    const tempId = Date.now().toString();
     const tempMsg = {
-      _id: tempId,
+      _id: Date.now().toString(),
       sender: user,
       receiver: selectedUser,
       message: text,
       createdAt: new Date().toISOString(),
       isRead: false,
     };
+
     setMessages((prev) => [...prev, tempMsg]);
 
     socketInstance.emit("sendMessage", {
@@ -169,12 +195,16 @@ function Chat({ user }) {
   return (
     <div className="chat-container">
       <Navbar user={user} />
+
       <div className="chat-body">
         <UserList
           users={users}
           loadMessages={loadMessages}
           onlineUsers={onlineUsers}
+          unreadCounts={unreadCounts}
+          loading={loadingUsers}
         />
+
         {selectedUser ? (
           <ChatBox
             selectedUser={selectedUser}
@@ -184,11 +214,11 @@ function Chat({ user }) {
             onlineUsers={onlineUsers}
           />
         ) : (
-          <div className="no-chat">👈 Select a user to start chatting</div>
+          <div className="no-chat">👉 Select a user to start chatting</div>
         )}
       </div>
     </div>
   );
 }
 
-export default Chat;  
+export default Chat;
